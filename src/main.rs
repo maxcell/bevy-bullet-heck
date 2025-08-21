@@ -1,18 +1,20 @@
 use bevy::prelude::*;
+use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 use bevy_ecs_tilemap::prelude::*;
-use learning::player::{controls, setup_player};
+use learning::{
+    assets::{AssetsPlugin, ImageAssets, MyStates},
+    player::{controls, setup_player},
+};
 
 const WIDTH: u32 = 32;
 const HEIGHT: u32 = 32;
 
 fn startup(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    image_assets: Res<ImageAssets>,
     array_texture_loader: Res<ArrayTextureLoader>,
 ) {
     commands.spawn(Camera2d);
-
-    let texture_handle: Handle<Image> = asset_server.load("terrain.png");
 
     let map_size = TilemapSize {
         x: WIDTH,
@@ -47,14 +49,14 @@ fn startup(
         map_type,
         size: map_size,
         storage: tile_storage,
-        texture: TilemapTexture::Single(texture_handle),
+        texture: TilemapTexture::Single(image_assets.terrain.clone()),
         tile_size,
         anchor: TilemapAnchor::Center,
         ..Default::default()
     });
 
     array_texture_loader.add(TilemapArrayTexture {
-        texture: TilemapTexture::Single(asset_server.load("terrain.png")),
+        texture: TilemapTexture::Single(image_assets.terrain.clone()),
         tile_size,
         ..Default::default()
     });
@@ -63,8 +65,13 @@ fn startup(
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .init_state::<MyStates>()
+        .add_plugins(AssetsPlugin)
+        .add_loading_state(
+            LoadingState::new(MyStates::AssetLoading).continue_to_state(MyStates::Next),
+        )
         .add_plugins(TilemapPlugin)
-        .add_systems(Startup, (startup, setup_player))
+        .add_systems(OnEnter(MyStates::Next), (startup, setup_player))
         .add_systems(Update, controls)
         .run();
 }

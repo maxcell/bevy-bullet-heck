@@ -1,27 +1,19 @@
 use bevy::prelude::*;
 
+use crate::assets::ImageAssets;
+
 #[derive(Component)]
 pub struct Player;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(Timer);
 
-pub fn setup_player(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
-    let layout = texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
-        UVec2 { x: 16, y: 24 },
-        3,
-        1,
-        None,
-        None,
-    ));
+pub fn setup_player(mut commands: Commands, image_assets: Res<ImageAssets>) {
+    let layout = image_assets.player_layout.clone();
 
     commands.spawn((
         Sprite {
-            image: asset_server.load("blob.png"),
+            image: image_assets.player.clone(),
             texture_atlas: Some(TextureAtlas { layout, index: 0 }),
             ..default()
         },
