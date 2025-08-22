@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 use bevy_ecs_tilemap::prelude::*;
+use leafwing_input_manager::prelude::*;
 use learning::{
     assets::{AssetsPlugin, ImageAssets, MyStates},
-    player::{controls, setup_player},
+    player::{PlayerAction, controls, setup_player},
 };
 
 const WIDTH: u32 = 32;
@@ -66,6 +67,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .init_state::<MyStates>()
+        .add_plugins(InputManagerPlugin::<PlayerAction>::default())
         .add_plugins(AssetsPlugin)
         .add_loading_state(
             LoadingState::new(MyStates::AssetLoading).continue_to_state(MyStates::Next),
