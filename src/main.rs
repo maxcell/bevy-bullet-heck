@@ -1,9 +1,12 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, time::common_conditions::on_timer};
 use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 use bevy_ecs_tilemap::prelude::*;
 use leafwing_input_manager::prelude::*;
 use learning::{
     assets::{AssetsPlugin, ImageAssets, MyStates},
+    enemy::{spawn_enemy, update_enemy_position},
     player::{PlayerAction, controls, setup_player},
 };
 
@@ -74,6 +77,15 @@ fn main() {
         )
         .add_plugins(TilemapPlugin)
         .add_systems(OnEnter(MyStates::Next), (startup, setup_player))
-        .add_systems(Update, controls)
+        .add_systems(
+            Update,
+            (
+                controls,
+                (
+                    spawn_enemy.run_if(on_timer(Duration::from_secs_f32(5.0))),
+                    update_enemy_position,
+                ),
+            ),
+        )
         .run();
 }
