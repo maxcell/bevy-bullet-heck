@@ -62,6 +62,6 @@ pub fn update_enemy_position(
     for mut transform in enemy_transform.iter_mut() {
         let dir = (player_pos - transform.translation).normalize();
 
-        transform.translation += dir * 1.0;
+        transform.translation += dir * 0.1;
     }
 }

@@ -8,6 +8,7 @@ use learning::{
     assets::{AssetsPlugin, ImageAssets, MyStates},
     enemy::{spawn_enemy, update_enemy_position},
     player::{PlayerAction, controls, setup_player},
+    weapon::{ShootingTimer, move_bullets, player_shooting},
 };
 
 const WIDTH: u32 = 32;
@@ -69,6 +70,7 @@ fn startup(
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .init_resource::<ShootingTimer>()
         .init_state::<MyStates>()
         .add_plugins(InputManagerPlugin::<PlayerAction>::default())
         .add_plugins(AssetsPlugin)
@@ -84,6 +86,8 @@ fn main() {
                 (
                     spawn_enemy.run_if(on_timer(Duration::from_secs_f32(5.0))),
                     update_enemy_position,
+                    player_shooting,
+                    move_bullets,
                 ),
             ),
         )

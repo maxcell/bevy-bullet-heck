@@ -1,7 +1,9 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-use crate::assets::ImageAssets;
+use crate::{assets::ImageAssets, weapon::Weapon};
 
 #[derive(Component)]
 pub struct Player;
@@ -11,6 +13,8 @@ pub struct AnimationTimer(Timer);
 
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum PlayerAction {
+    #[actionlike(DualAxis)]
+    DirectionalFace,
     #[actionlike(DualAxis)]
     Move,
     UseItem,
@@ -26,7 +30,7 @@ impl PlayerAction {
         input_map.insert(Self::UseItem, GamepadButton::RightTrigger2);
 
         // Default kbm input bindings
-        input_map.insert_dual_axis(Self::Move, VirtualDPad::wasd());
+        input_map.insert_dual_axis(Self::DirectionalFace, VirtualDPad::wasd());
         input_map.insert_dual_axis(Self::Move, VirtualDPad::arrow_keys());
         input_map.insert(Self::UseItem, MouseButton::Left);
 
@@ -43,9 +47,10 @@ pub fn setup_player(mut commands: Commands, image_assets: Res<ImageAssets>) {
             texture_atlas: Some(TextureAtlas { layout, index: 0 }),
             ..default()
         },
-        Transform::from_xyz(0.0, 0.0, 1.0),
+        Transform::from_xyz(0.0, 0.0, 1.0).with_rotation(Quat::from_rotation_z(0.0)),
         AnimationTimer(Timer::from_seconds(1., TimerMode::Repeating)),
         Player,
+        Weapon,
     ));
 }
 
@@ -58,6 +63,34 @@ pub fn controls(
 
     let action_state = query.single().expect("Player actions not found");
     let axis_pair = action_state.clamped_axis_pair(&PlayerAction::Move);
+
+    let camera_pair = action_state.clamped_axis_pair(&PlayerAction::DirectionalFace);
+
+    dbg!(&camera_pair);
+
+    if camera_pair.x > 0. {
+        sprite_position.rotation = sprite_position
+            .rotation
+            .lerp(Quat::from_rotation_z(PI), 1.0);
+    }
+
+    if camera_pair.x < 0. {
+        sprite_position.rotation = sprite_position
+            .rotation
+            .lerp(Quat::from_rotation_z(-PI), 1.0);
+    }
+
+    if camera_pair.y < 0. {
+        sprite_position.rotation = sprite_position
+            .rotation
+            .lerp(Quat::from_rotation_z(-PI / 2.0), 1.0);
+    }
+
+    if camera_pair.y > 0. {
+        sprite_position.rotation = sprite_position
+            .rotation
+            .lerp(Quat::from_rotation_z(PI / 2.0), 1.0);
+    }
 
     let distance = 16. * time.delta_secs() * 2.;
     if axis_pair.x > 0. {
