@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f32::consts::{PI, TAU};
 
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -68,25 +68,41 @@ pub fn controls(
 
     dbg!(&camera_pair);
 
-    if camera_pair.x > 0. {
+    // Diagonal up right
+    if camera_pair.x > 0. && camera_pair.y > 0. {
+        // let y = sprite_position.translation.y;
+        // let x = sprite_position.translation.x;
+        // let target_angle = x.atan2(y);
+        let target_rotation = Quat::from_rotation_z(PI / 4.0);
+        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
+    }
+    // Diagonal up left
+    else if camera_pair.x < 0. && camera_pair.y > 0. {
+        let target_rotation = Quat::from_rotation_z(3. * PI / 4.0);
+        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
+    }
+    // Diagonal down left
+    else if camera_pair.x < 0. && camera_pair.y < 0. {
+        let target_rotation = Quat::from_rotation_z(5.0 * PI / 4.0);
+        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
+    }
+    // Diagonal down right
+    else if camera_pair.x > 0. && camera_pair.y < 0. {
+        let target_rotation = Quat::from_rotation_z(7.0 * PI / 4.0);
+        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
+    } else if camera_pair.x > 0. {
         sprite_position.rotation = sprite_position
             .rotation
-            .lerp(Quat::from_rotation_z(PI), 1.0);
-    }
-
-    if camera_pair.x < 0. {
+            .lerp(Quat::from_rotation_z(0.), 1.0);
+    } else if camera_pair.x < 0. {
         sprite_position.rotation = sprite_position
             .rotation
             .lerp(Quat::from_rotation_z(-PI), 1.0);
-    }
-
-    if camera_pair.y < 0. {
+    } else if camera_pair.y < 0. {
         sprite_position.rotation = sprite_position
             .rotation
-            .lerp(Quat::from_rotation_z(-PI / 2.0), 1.0);
-    }
-
-    if camera_pair.y > 0. {
+            .lerp(Quat::from_rotation_z(3. * PI / 2.0), 1.0);
+    } else if camera_pair.y > 0. {
         sprite_position.rotation = sprite_position
             .rotation
             .lerp(Quat::from_rotation_z(PI / 2.0), 1.0);
