@@ -66,48 +66,15 @@ pub fn controls(
 
     let camera_pair = action_state.clamped_axis_pair(&PlayerAction::DirectionalFace);
 
-    dbg!(&camera_pair);
+    // Arc Tan allows us to take opposite side and adjacent side
+    // and compute the corresponding angle that we need to rotate towards
+    let y = camera_pair.y;
+    let x = camera_pair.x;
+    let target_angle = y.atan2(x);
+    let target_rotation = Quat::from_rotation_z(target_angle);
+    sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
 
-    // Diagonal up right
-    if camera_pair.x > 0. && camera_pair.y > 0. {
-        // let y = sprite_position.translation.y;
-        // let x = sprite_position.translation.x;
-        // let target_angle = x.atan2(y);
-        let target_rotation = Quat::from_rotation_z(PI / 4.0);
-        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
-    }
-    // Diagonal up left
-    else if camera_pair.x < 0. && camera_pair.y > 0. {
-        let target_rotation = Quat::from_rotation_z(3. * PI / 4.0);
-        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
-    }
-    // Diagonal down left
-    else if camera_pair.x < 0. && camera_pair.y < 0. {
-        let target_rotation = Quat::from_rotation_z(5.0 * PI / 4.0);
-        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
-    }
-    // Diagonal down right
-    else if camera_pair.x > 0. && camera_pair.y < 0. {
-        let target_rotation = Quat::from_rotation_z(7.0 * PI / 4.0);
-        sprite_position.rotation = sprite_position.rotation.lerp(target_rotation, 1.0);
-    } else if camera_pair.x > 0. {
-        sprite_position.rotation = sprite_position
-            .rotation
-            .lerp(Quat::from_rotation_z(0.), 1.0);
-    } else if camera_pair.x < 0. {
-        sprite_position.rotation = sprite_position
-            .rotation
-            .lerp(Quat::from_rotation_z(-PI), 1.0);
-    } else if camera_pair.y < 0. {
-        sprite_position.rotation = sprite_position
-            .rotation
-            .lerp(Quat::from_rotation_z(3. * PI / 2.0), 1.0);
-    } else if camera_pair.y > 0. {
-        sprite_position.rotation = sprite_position
-            .rotation
-            .lerp(Quat::from_rotation_z(PI / 2.0), 1.0);
-    }
-
+    
     let distance = 16. * time.delta_secs() * 2.;
     if axis_pair.x > 0. {
         dbg!("Directionally right");
